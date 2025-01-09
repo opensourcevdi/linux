@@ -34,7 +34,6 @@
 
 #include <drm/drm.h>
 #include <drm/drm_atomic_helper.h>
-#include <drm/drm_client_setup.h>
 #include <drm/drm_drv.h>
 #include <drm/drm_fbdev_shmem.h>
 #include <drm/drm_file.h>
@@ -104,8 +103,7 @@ static int virtio_gpu_probe(struct virtio_device *vdev)
 	if (ret)
 		goto err_deinit;
 
-	drm_client_setup(vdev->priv, NULL);
-
+	drm_fbdev_shmem_setup(vdev->priv, 32);
 	return 0;
 
 err_deinit:
@@ -184,8 +182,6 @@ static const struct drm_driver driver = {
 	.postclose = virtio_gpu_driver_postclose,
 
 	.dumb_create = virtio_gpu_mode_dumb_create,
-
-	DRM_FBDEV_SHMEM_DRIVER_OPS,
 
 #if defined(CONFIG_DEBUG_FS)
 	.debugfs_init = virtio_gpu_debugfs_init,
