@@ -32,7 +32,7 @@
 #include <linux/dynamic_debug.h>
 #include <linux/debugfs.h>
 
-#include <drm/clients/drm_client_setup.h>
+#include <drm/drm_client_setup.h>
 #include <drm/drm_drv.h>
 #include <drm/drm_fbdev_ttm.h>
 #include <drm/drm_gem_ttm_helper.h>
