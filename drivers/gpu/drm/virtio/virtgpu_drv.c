@@ -168,6 +168,7 @@ MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Dave Airlie <airlied@redhat.com>");
 MODULE_AUTHOR("Gerd Hoffmann <kraxel@redhat.com>");
 MODULE_AUTHOR("Alon Levy");
+MODULE_IMPORT_NS(DMA_BUF);
 
 DEFINE_DRM_GEM_FOPS(virtio_gpu_driver_fops);
 
