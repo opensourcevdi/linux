@@ -6,7 +6,23 @@
 
 #include "vfio_pci_priv.h"
 
-MODULE_IMPORT_NS("DMA_BUF");
+MODULE_IMPORT_NS(DMA_BUF);
+
+// Copied from `drivers/vfio/vfio_main.c`:
+/*
+ * Device objects - create, release, get, put, search
+ */
+/* Device reference always implies a group reference */
+static void vfio_device_put_registration(struct vfio_device *device)
+{
+        if (refcount_dec_and_test(&device->refcount))
+                complete(&device->comp);
+}
+
+static bool vfio_device_try_get_registration(struct vfio_device *device)
+{
+        return refcount_inc_not_zero(&device->refcount);
+}
 
 struct vfio_pci_dma_buf {
 	struct dma_buf *dmabuf;
@@ -57,7 +73,7 @@ static void vfio_pci_dma_buf_release(struct dma_buf *dmabuf)
 static const struct dma_buf_ops vfio_pci_dmabuf_ops = {
 	.pin = vfio_pci_dma_buf_pin,
 	.unpin = vfio_pci_dma_buf_unpin,
-	.get_pfn = vfio_pci_dma_buf_get_pfn,
+	// .get_pfn = vfio_pci_dma_buf_get_pfn,
 	.release = vfio_pci_dma_buf_release,
 };
 
@@ -96,10 +112,13 @@ static int check_dma_ranges(struct vfio_pci_dma_buf *priv, u64 *dmabuf_size)
 	return 0;
 }
 
-int vfio_pci_core_feature_dma_buf(struct vfio_pci_core_device *vdev, u32 flags,
+int vfio_pci_core_feature_dma_buf(struct vfio_device *core_vdev, u32 flags,
 				  struct vfio_device_feature_dma_buf __user *arg,
 				  size_t argsz)
 {
+	struct vfio_pci_core_device *vdev =
+		container_of(core_vdev, struct vfio_pci_core_device, vdev);
+
 	struct vfio_device_feature_dma_buf get_dma_buf;
 	struct vfio_region_dma_range *dma_ranges;
 	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
